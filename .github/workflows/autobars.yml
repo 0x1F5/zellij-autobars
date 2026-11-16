@@ -1,0 +1,20 @@
+# v で始まるタグを push すると autobars をビルドし、Releases に autobars.wasm を置く
+name: autobars
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup target add wasm32-wasip1
+      - run: cargo build --release
+        working-directory: src/zellij-autobars
+      - run: |
+          cp src/zellij-autobars/target/wasm32-wasip1/release/zellij-autobars.wasm autobars.wasm
+          gh release create "$GITHUB_REF_NAME" autobars.wasm
+        env:
+          GH_TOKEN: ${{ github.token }}
